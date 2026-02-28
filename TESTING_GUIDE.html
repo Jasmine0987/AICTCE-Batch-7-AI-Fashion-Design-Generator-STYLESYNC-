@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Fashion Studio — Testing Guide</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+:root {
+  --bg: #0A0A10; --card: #111118; --card2: #18181F; --border: #252535;
+  --purple: #8B5CF6; --cyan: #06B6D4; --green: #10B981;
+  --yellow: #F59E0B; --red: #EF4444;
+  --text: #E2E2F0; --muted: #7070A0; --dim: #404060;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); line-height:1.65; }
+
+.hero {
+  background: linear-gradient(150deg,#0D0221 0%,#060E1C 45%,#02120E 100%);
+  padding: 52px 24px 40px; text-align:center; border-bottom:1px solid var(--border);
+}
+.hero h1 {
+  font-size:2.3rem; font-weight:700; letter-spacing:-0.5px;
+  background:linear-gradient(120deg,#C4B5FD,#67E8F9,#86EFAC);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  margin-bottom:8px;
+}
+.hero p { color:var(--muted); font-size:.82rem; letter-spacing:2px; text-transform:uppercase; margin-bottom:20px; }
+.chips { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+.chip { background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); color:var(--muted); padding:4px 14px; border-radius:20px; font-size:.72rem; }
+
+.sticky-nav {
+  background:rgba(10,10,16,.95); border-bottom:1px solid var(--border);
+  padding:10px 24px; display:flex; gap:4px; flex-wrap:wrap; align-items:center;
+  position:sticky; top:0; z-index:100; backdrop-filter:blur(16px);
+}
+.nav-lbl { color:var(--dim); font-size:.66rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; margin-right:4px; }
+.nav-btn {
+  background:none; border:1px solid transparent; border-radius:7px;
+  color:var(--muted); padding:5px 11px; font-size:.74rem; font-weight:500;
+  cursor:pointer; font-family:inherit; transition:all .15s;
+}
+.nav-btn:hover { color:var(--text); background:var(--card2); border-color:var(--border); }
+
+.prog-bar-wrap { max-width:860px; margin:24px auto 0; padding:0 24px; }
+.prog-meta { display:flex; justify-content:space-between; font-size:.74rem; color:var(--muted); margin-bottom:6px; }
+.prog-track { background:var(--border); border-radius:6px; height:6px; overflow:hidden; }
+.prog-fill { height:100%; border-radius:6px; width:0; background:linear-gradient(90deg,var(--purple),var(--cyan)); transition:width .35s; }
+
+.wrap { max-width:860px; margin:0 auto; padding:0 24px 80px; }
+
+/* PHASE */
+.phase { margin-top:32px; border:1px solid var(--border); border-radius:16px; overflow:hidden; background:var(--card); }
+.ph-head { padding:18px 24px; display:flex; align-items:center; gap:14px; border-bottom:1px solid var(--border); }
+.ph-icon { width:42px; height:42px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0; }
+.ph-title { font-size:1.05rem; font-weight:700; }
+.ph-sub { font-size:.76rem; color:var(--muted); margin-top:1px; }
+.ph-body { padding:20px 24px; }
+
+/* STEPS */
+.steps { display:flex; flex-direction:column; gap:8px; }
+.step {
+  display:flex; gap:11px; align-items:flex-start;
+  background:var(--card2); border:1px solid var(--border);
+  border-radius:10px; padding:12px 14px; cursor:pointer;
+  transition:all .15s; position:relative; user-select:none;
+}
+.step:hover { border-color:var(--purple); }
+.step.done { border-color:var(--green) !important; background:rgba(16,185,129,.04); }
+.step.done::after { content:'✓'; position:absolute; right:13px; top:50%; transform:translateY(-50%); color:var(--green); font-weight:700; }
+.snum { width:22px; height:22px; border-radius:6px; flex-shrink:0; background:var(--border); color:var(--muted); display:flex; align-items:center; justify-content:center; font-size:.65rem; font-weight:700; transition:all .15s; }
+.step.done .snum { background:rgba(16,185,129,.2); color:var(--green); }
+.st-text { font-size:.83rem; color:var(--text); flex:1; padding-right:20px; }
+.st-note { font-size:.73rem; color:var(--muted); margin-top:3px; line-height:1.45; }
+.st-note code { font-family:'JetBrains Mono',monospace; font-size:.71rem; background:rgba(255,255,255,.07); padding:1px 5px; border-radius:3px; color:#A8C0D6; }
+
+/* CODE BLOCKS */
+.codeblock { background:#060610; border:1px solid var(--border); border-radius:10px; margin:12px 0; overflow:hidden; }
+.code-top { display:flex; justify-content:space-between; align-items:center; padding:7px 15px; border-bottom:1px solid var(--border); background:rgba(255,255,255,.015); }
+.code-lang { font-size:.63rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--dim); }
+.copy-btn { background:var(--border); border:none; border-radius:5px; color:var(--muted); padding:3px 9px; font-size:.67rem; cursor:pointer; font-family:inherit; transition:all .15s; }
+.copy-btn:hover { background:var(--purple); color:white; }
+.code-body { padding:14px 18px; overflow-x:auto; }
+.code-body code { font-family:'JetBrains Mono',monospace; font-size:.8rem; color:#A8C0D6; white-space:pre; display:block; line-height:1.85; }
+.g{color:#86EFAC;} .p{color:#C4B5FD;} .y{color:#FDE68A;} .c{color:#67E8F9;} .r{color:#FCA5A5;} .d{color:var(--dim);}
+
+/* ALERTS */
+.alert { border-radius:9px; padding:12px 16px; margin:12px 0; display:flex; gap:10px; align-items:flex-start; font-size:.81rem; }
+.alert .ico { font-size:.95rem; flex-shrink:0; margin-top:1px; }
+.tip { background:rgba(16,185,129,.07); border:1px solid rgba(16,185,129,.2); }
+.warn { background:rgba(245,158,11,.07); border:1px solid rgba(245,158,11,.2); }
+.danger { background:rgba(239,68,68,.07); border:1px solid rgba(239,68,68,.2); }
+.info { background:rgba(6,182,212,.07); border:1px solid rgba(6,182,212,.2); }
+.alert b { color:var(--text); }
+
+/* WHAT TO EXPECT */
+.expect { background:rgba(139,92,246,.06); border:1px solid rgba(139,92,246,.18); border-radius:9px; padding:13px 17px; margin-top:14px; }
+.exp-title { font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--purple); margin-bottom:8px; }
+.exp-item { font-size:.79rem; color:var(--muted); padding:2px 0; display:flex; gap:8px; }
+.exp-item::before { content:'→'; color:var(--purple); flex-shrink:0; }
+
+/* PROMPTS */
+.prompt-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:12px 0; }
+.pcard { background:var(--card2); border:1px solid var(--border); border-radius:10px; padding:13px 15px; cursor:pointer; transition:all .15s; position:relative; }
+.pcard:hover { border-color:var(--cyan); }
+.pcard.copied { border-color:var(--green); }
+.pcopy-badge { display:none; position:absolute; top:8px; right:8px; background:var(--green); color:white; font-size:.6rem; font-weight:700; padding:2px 7px; border-radius:10px; }
+.pcard.copied .pcopy-badge { display:block; }
+.plbl { font-size:.63rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--cyan); margin-bottom:5px; }
+.ptxt { font-size:.79rem; color:var(--text); line-height:1.5; font-style:italic; }
+
+/* ERR TABLE */
+.etbl { width:100%; border-collapse:collapse; font-size:.79rem; margin:12px 0; }
+.etbl th { background:var(--card2); padding:9px 13px; text-align:left; color:var(--muted); font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; border-bottom:1px solid var(--border); }
+.etbl td { padding:10px 13px; border-bottom:1px solid rgba(255,255,255,.03); vertical-align:top; }
+.emsg { font-family:'JetBrains Mono',monospace; color:#FCA5A5; font-size:.72rem; }
+.efix { color:var(--green); }
+.efix code { font-family:'JetBrains Mono',monospace; font-size:.72rem; background:rgba(16,185,129,.1); padding:1px 5px; border-radius:3px; }
+
+hr { border:none; border-top:1px solid var(--border); margin:20px 0; }
+
+/* SUB-SECTION HEADER */
+.sh { font-size:.8rem; font-weight:700; margin:20px 0 10px; padding:6px 10px; border-radius:6px; }
+
+/* SUMMARY */
+.summary { margin-top:32px; background:var(--card); border:1px solid var(--border); border-radius:16px; padding:28px; text-align:center; }
+.sum-score { font-size:2.8rem; font-weight:700; color:var(--green); margin:10px 0 4px; }
+.sum-msg { color:var(--muted); font-size:.83rem; }
+.reset-btn { margin-top:14px; background:none; border:1px solid var(--border); color:var(--muted); padding:7px 18px; border-radius:7px; cursor:pointer; font-family:inherit; font-size:.78rem; transition:all .15s; }
+.reset-btn:hover { border-color:var(--red); color:var(--red); }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>🧪 Test Your AI Fashion Studio</h1>
+  <p>Interactive checklist — click each step to mark it done</p>
+  <div class="chips">
+    <span class="chip">46 Steps</span>
+    <span class="chip">5 Modes to Test</span>
+    <span class="chip">CLIP · MobileNetV2 · FAISS · BERT · KMeans</span>
+    <span class="chip">Error Fixes Included</span>
+  </div>
+</div>
+
+<nav class="sticky-nav">
+  <span class="nav-lbl">Jump to</span>
+  <button class="nav-btn" onclick="go('p1')">① Setup</button>
+  <button class="nav-btn" onclick="go('p2')">② Check Imports</button>
+  <button class="nav-btn" onclick="go('p3')">③ Launch App</button>
+  <button class="nav-btn" onclick="go('p4')">④ Text Mode</button>
+  <button class="nav-btn" onclick="go('p5')">⑤ Image Mode</button>
+  <button class="nav-btn" onclick="go('p6')">⑥ Other Modes</button>
+  <button class="nav-btn" onclick="go('p7')">⑦ Fix Errors</button>
+</nav>
+
+<div class="prog-bar-wrap">
+  <div class="prog-meta"><span id="ptxt">0 of 46 steps done</span><span id="ppct">0%</span></div>
+  <div class="prog-track"><div class="prog-fill" id="pbar"></div></div>
+</div>
+
+<div class="wrap">
+
+<!-- ═══════════════════════════════ PHASE 1 ═════════ -->
+<div class="phase" id="p1">
+  <div class="ph-head" style="background:linear-gradient(135deg,rgba(139,92,246,.1),transparent)">
+    <div class="ph-icon" style="background:rgba(139,92,246,.2)">🔑</div>
+    <div><div class="ph-title">Phase 1 — Setup &amp; API Key</div><div class="ph-sub">Do these once before anything else</div></div>
+  </div>
+  <div class="ph-body">
+    <div class="steps">
+      <div class="step" onclick="tick(this)">
+        <div class="snum">1</div>
+        <div class="st-text">Get your free Gemini API key
+          <div class="st-note">Go to <code>aistudio.google.com/app/apikey</code> → Sign in with Google → Create API Key → copy it (starts with <code>AIzaSy...</code>)</div>
+        </div>
+      </div>
+      <div class="step" onclick="tick(this)">
+        <div class="snum">2</div>
+        <div class="st-text">Open a terminal inside your <code>fashion_ai/</code> folder and activate your virtual environment</div>
+      </div>
+      <div class="step" onclick="tick(this)">
+        <div class="snum">3</div>
+        <div class="st-text">Install all packages (takes 5–10 min on first run)</div>
+      </div>
+    </div>
+
+    <div class="codeblock">
+      <div class="code-top"><span class="code-lang">Mac / Linux</span><button class="copy-btn" onclick="cp(this)">Copy</button></div>
+      <div class="code-body"><code><span class="g">python3 -m venv venv</span>
+<span class="g">source venv/bin/activate</span>
+<span class="y">pip install --upgrade pip</span>
+<span class="y">pip install -r requirements.txt</span>
+<span class="c">python3 -c "import nltk; nltk.download('punkt'); nltk.download('stopwords')"</span></code></div>
+    </div>
+    <div class="codeblock">
+      <div class="code-top"><span class="code-lang">Windows PowerShell</span><button class="copy-btn" onclick="cp(this)">Copy</button></div>
+      <div class="code-body"><code><span class="g">python -m venv venv</span>
+<span class="g">venv\Scripts\activate</span>
+<span class="y">pip install --upgrade pip</span>
+<span class="y">pip install -r requirements.txt</span>
+<span class="c">python -c "import nltk; nltk.download('punkt'); nltk.download('stopwords')"</span></code></div>
+    </div>
+
+    <div class="alert warn"><span class="ico">⏳</span><div>First-time install downloads PyTorch (~1.8 GB) + CLIP + BERT + 25 other packages. <b>Wait for "Successfully installed..."</b> before continuing. If it stops, re-run the pip install line.</div></div>
+
+    <div class="steps" style="margin-top:14px;">
+      <div class="step" onclick="tick(this)">
+        <div class="snum">4</div>
+        <div class="st-text">Create <code>.env</code> file and add your Gemini API key
+          <div class="st-note">Mac/Linux: <code>cp .env.example .env</code> then open it. &nbsp; Windows: <code>copy .env.example .env</code> then <code>notepad .env</code></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="codeblock">
+      <div class="code-top"><span class="code-lang">.env file — what it must contain</span><button class="copy-btn" onclick="cp(this)">Copy</button></div>
+      <div class="code-body"><code><span class="g">GEMINI_API_KEY=</span><span class="y">AIzaSyBxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</span>
+<span class="p">SERPAPI_KEY=</span>   <span class="d"># leave blank — mock products used without it, app still fully works</span></code></div>
+    </div>
+
+    <div class="alert danger"><span class="ico">⚠️</span><div><b>Replace the example key with YOUR actual key.</b> No quotes. No spaces around the = sign. Key must start with AIzaSy. Without this, every Generate click throws PermissionDenied.</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ PHASE 2 ═════════ -->
+<div class="phase" id="p2">
+  <div class="ph-head" style="background:linear-gradient(135deg,rgba(6,182,212,.1),transparent)">
+    <div class="ph-icon" style="background:rgba(6,182,212,.2)">✅</div>
+    <div><div class="ph-title">Phase 2 — Verify All Imports Work</div><div class="ph-sub">Run these checks before launching — saves debugging time</div></div>
+  </div>
+  <div class="ph-body">
+    <div class="steps">
+      <div class="step" onclick="tick(this)">
+        <div class="snum">5</div>
+        <div class="st-text">Confirm your terminal shows <code>(venv)</code> at the start of the prompt
+          <div class="st-note">Not visible? Run: <code>source venv/bin/activate</code> (Mac) or <code>venv\Scripts\activate</code> (Windows)</div>
+        </div>
+      </div>
+      <div class="step" onclick="tick(this)">
+        <div class="snum">6</div>
+        <div class="st-text">Run the import check command — confirm <code>✅ ALL IMPORTS PASSED</code> appears</div>
+      </div>
+    </div>
+
+    <div class="codeblock">
+      <div class="code-top"><span class="code-lang">Paste in terminal — checks every critical package</span><button class="copy-btn" onclick="cp(this)">Copy</button></div>
+      <div class="code-body"><code><span class="c">python -c "
+import torch, torchvision, open_clip, faiss
+import streamlit, cv2, sklearn, numpy
+from PIL import Image
+from sentence_transformers import SentenceTransformer
+import google.generativeai as genai
+print('✅ ALL IMPORTS PASSED')
+print('   PyTorch:', torch.__version__)
+print('   CUDA GPU:', torch.cuda.is_available(), '(False = normal on laptop)')
+"</span></code></div>
+    </div>
+
+    <div class="steps" style="margin-top:14px;">
+      <div class="step" onclick="tick(this)">
+        <div class="snum">7</div>
+        <div class="st-text">Test your Gemini API key works — run the quick test below</div>
+      </div>
+    </div>
+
+    <div class="codeblock">
+      <div class="code-top"><span class="code-lang">Gemini API key test</span><button class="copy-btn" onclick="cp(this)">Copy</button></div>
+      <div class="code-body"><code><span class="c">python -c "
+import os; from dotenv import load_dotenv
+import google.generativeai as genai
+load_dotenv()
+key = os.getenv('GEMINI_API_KEY','')
+genai.configure(api_key=key)
+r = genai.GenerativeModel('gemini-2.5-flash').generate_content('Say: KEY WORKS')
+print('✅ Gemini:', r.text.strip()[:30])
+"</span></code></div>
+    </div>
+
+    <div class="alert tip"><span class="ico">✅</span><div>If you see <b>Gemini: KEY WORKS</b> — your connection is perfect and the app will work fully. If you see 403 error — your key in .env is wrong or expired.</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ PHASE 3 ═════════ -->
+<div class="phase" id="p3">
+  <div class="ph-head" style="background:linear-gradient(135deg,rgba(16,185,129,.1),transparent)">
+    <div class="ph-icon" style="background:rgba(16,185,129,.2)">🚀</div>
+    <div><div class="ph-title">Phase 3 — Launch the App</div><div class="ph-sub">What to expect when the site first opens</div></div>
+  </div>
+  <div class="ph-body">
+    <div class="steps">
+      <div class="step" onclick="tick(this)">
+        <div class="snum">8</div>
+        <div class="st-text">Run the Streamlit app</div>
+      </div>
+    </div>
+
+    <div class="codeblock">
+      <div class="code-top"><span class="code-lang">Mac / Linux</span><button class="copy-btn" onclick="cp(this)">Copy</button></div>
+      <div class="code-body"><code><span class="g">source venv/bin/activate</span>
+<span class="y">streamlit run app.py</span></code></div>
+    </div>
+    <div class="codeblock">
+      <div class="code-top"><span class="code-lang">Windows</span><button class="copy-btn" onclick="cp(this)">Copy</button></div>
+      <div class="code-body"><code><span class="g">venv\Scripts\activate</span>
+<span class="y">streamlit run app.py</span></code></div>
+    </div>
+
+    <div class="steps" style="margin-top:14px;">
+      <div class="step" onclick="tick(this)">
+        <div class="snum">9</div>
+        <div class="st-text">Browser tab opens automatically at <code>http://localhost:8501</code>
+          <div class="st-note">If it doesn't open: manually paste that URL into Chrome or Firefox</div>
+        </div>
+      </div>
+      <div class="step" onclick="tick(this)">
+        <div class="snum">10</div>
+        <div class="st-text">Wait 30–60 seconds for first-time model loading (spinner in top-right corner)
+          <div class="st-note">CLIP (350 MB), Sentence-BERT (90 MB), MobileNetV2 load from HuggingFace on the very first launch only. Every launch after this is instant.</div>
+        </div>
+      </div>
+      <div class="step" onclick="tick(this)">
+        <div class="snum">11</div>
+        <div class="st-text">Confirm the site looks correct — no red error box at the top of the page</div>
+      </div>
+    </div>
+
+    <div class="expect">
+      <div class="exp-title">Site Loaded Correctly When You See</div>
+      <div class="exp-item">Dark hero banner with "AI Fashion Studio" gradient title</div>
+      <div class="exp-item">Left sidebar with 5 mode options: ✏️ Text → Design, 📸 Image → Design, 🎯 Occasion Planner, 🌊 Trend Explorer, 📊 ML Analytics</div>
+      <div class="exp-item">A row of 8 trend pills: 🔥 Mob Wife &nbsp;🔥 Ballet Core &nbsp;🔥 Quiet Luxury &nbsp;🔥 Dopamine Dressing &nbsp;🔥 Old Money &nbsp;🔥 Dark Academia &nbsp;🔥 Coastal Grandmother &nbsp;🔥 Gorpcore</div>
+      <div class="exp-item">Text area with placeholder text and big "✦ Generate Design with Full ML Pipeline" button</div>
+      <div class="exp-item">Sidebar showing "ML Models Active" section with checkboxes</div>
+    </div>
+
+    <div class="alert warn"><span class="ico">🔴</span><div>If you see a <b>red ImportError banner at the top</b>, look at the error name, scroll to Phase 7 (Fix Errors), find that error, run the fix command, then restart: <code>streamlit run app.py</code></div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ PHASE 4 ═════════ -->
+<div class="phase" id="p4">
+  <div class="ph-head" style="background:linear-gradient(135deg,rgba(139,92,246,.12),transparent)">
+    <div class="ph-icon" style="background:rgba(139,92,246,.2)">✏️</div>
+    <div><div class="ph-title">Phase 4 — Test: Text → Design Mode</div><div class="ph-sub">Main feature — triggers all 6 ML pipeline steps</div></div>
+  </div>
+  <div class="ph-body">
+
+    <p style="color:var(--muted);font-size:.81rem;margin-bottom:14px;">In the sidebar, <strong>"✏️ Text → Design"</strong> is selected by default. Start here.</p>
+
+    <div class="alert info"><span class="ico">📋</span><div><b>Click any prompt card below to copy it</b> — paste into the text box in the app for the best output</div></div>
+
+    <div class="prompt-grid">
+      <div class="pcard" onclick="copyP(this)">
+        <span class="pcopy-badge">Copied!</span>
+        <div class="plbl">🌸 Best for Demo</div>
+        <div class="ptxt">An ethereal cottagecore maxi dress in dusty rose and ivory, puff sleeves, floral embroidery, linen fabric — for a summer garden picnic</div>
+      </div>
+      <div class="pcard" onclick="copyP(this)">
+        <span class="pcopy-badge">Copied!</span>
+        <div class="plbl">👔 Quiet Luxury</div>
+        <div class="ptxt">A minimalist old money blazer and wide-leg trouser co-ord in camel and cream, silk shell top — for a corporate keynote</div>
+      </div>
+      <div class="pcard" onclick="copyP(this)">
+        <span class="pcopy-badge">Copied!</span>
+        <div class="plbl">✨ Y2K Party</div>
+        <div class="ptxt">A Y2K metallic mini dress with butterfly embellishments, rhinestone straps, platform boots — for a New Year party</div>
+      </div>
+      <div class="pcard" onclick="copyP(this)">
+        <span class="pcopy-badge">Copied!</span>
+        <div class="plbl">🎊 Indian Festive</div>
+        <div class="ptxt">An embroidered lehenga choli in deep wine and gold with mirror work, net dupatta — for a Diwali celebration</div>
+      </div>
+    </div>
+
+    <div class="steps">
+      <div class="step" onclick="tick(this)">
+        <div class="snum">12</div>
+        <div class="st-text">Paste a prompt into the text area
+          <div class="st-note">Watch below the box — colored entity tags appear immediately showing NLP running live (garments, colors, aesthetics auto-extracted)</div>
+        </div>
+      </div>
+      <div class="step" onclick="tick(this)">
+        <div class="snum">13</div>
+        <div class="st-text">Click <strong>"✦ Generate Design with Full ML Pipeline"</strong></div>
+      </div>
+      <div class="step" onclick="tick(this)">
+        <div class="snum">14</div>
+        <div class="st-text">Watch the 6-step progress bar run across the screen
+          <div class="st-note">Step 1: NLP extraction → Step 2: CLIP text embedding → Step 3: Gemini 2.5 Flash → Step 4: Color palette from NLP → Step 5: FAISS indexing → Step 6: BERT product ranking</div>
+        </div>
+      </div>
+      <div class="step" onclick="tick(this)">
+        <div class="snum">15</div>
+        <div class="st-text">Verify the design card appears with all 5 sections filled in
+          <div class="st-note">Should have: DESIGN CONCEPT · KEY ELEMENTS · COLOR PALETTE (with hex codes) · STYLING TIPS · OCCASION FIT</div>
+        </div>
+      </div>
+      <div class="step" onclick="tick(this)">
+        <div class="snum">16</div>
+        <div class="st-text">Check the <strong>NLP Analysis panel</strong> in the right column — shows extracted keywords and an auto-detected occasion label
+          <div class="st-note">Occasion is auto-detected by CLIP comparing your text embedding against 7 occasion embeddings via cosine similarity — no dropdown required</div>
+        </div>
+      </div>
+      <div class="step" onclick="tick(this)">
+        <div class="snum">17</div>
+        <div class="st-text">Scroll down — confirm 4 product cards appear, each with a <strong>Relevance %</strong> and <strong>Semantic %</strong> score
+          <div class="st-note">These come from the 3-signal BERT ranker: 50% Sentence-BERT semantic similarity + 30% style tag overlap + 20% product rating normalization</div>
+        </div>
+      </div>
+      <div class="step" onclick="tick(this)">
+        <div class="snum">18</div>
+        <div class="st-text">Type a name in the "Name:" field and click <strong>"💾 Save to Portfolio"</strong>
+          <div class="st-note">Sidebar counter should increment to "Portfolio (1 saved)" and a small save card appears below it</div>
+        </div>
+      </div>
+      <div class="step" onclick="tick(this)">
+        <div class="snum">19</div>
+        <div class="st-text">Test a <strong>Quick Prompt button</strong> — click one of the 4 preset buttons (Cottagecore 🌸 / Y2K Party ✨ / Quiet Luxury 👔 / Festive Lehenga 🎊)
+          <div class="st-note">It auto-fills the text box with a preset prompt — then hit Generate</div>
+        </div>
+      </div>
+      <div class="step" onclick="tick(this)">
+        <div class="snum">20</div>
+        <div class="st-text">Test <strong>Trend Boost</strong> — check "Incorporate trending styles", select "Ballet Core" in the multiselect, click Generate again
+          <div class="st-note">Output should blend ballet-inspired elements into your design concept</div>
+        </div>
+      </div>
+      <div class="step" onclick="tick(this)">
+        <div class="snum">21</div>
+        <div class="st-text">Test sidebar budget — toggle <strong>"Set Budget Limit"</strong> ON, set slider to ₹2000, generate again and check product card prices</div>
+      </div>
+    </div>
+
+    <div class="expect">
+      <div class="exp-title">Correct Output Looks Like This</div>
+      <div class="exp-item">Design card has all 5 sections with real content — not placeholder text</div>
+      <div class="exp-item">NLP panel shows 5–8 keyword tags in purple + occasion label (e.g. "casual") + embedding norm value</div>
+      <div class="exp-item">4 product cards with: store name (Myntra/AJIO/Flipkart) · price in ₹ · Relevance score (e.g. 0.72) · Semantic % · "Shop Now →" button</div>
+      <div class="exp-item">After saving: sidebar shows "Portfolio (1 saved)" · design name appears in recent saves list</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ PHASE 5 ═════════ -->
+<div class="phase" id="p5">
+  <div class="ph-head" style="background:linear-gradient(135deg,rgba(6,182,212,.1),transparent)">
+    <div class="ph-icon" style="background:rgba(6,182,212,.2)">📸</div>
+    <div><div class="ph-title">Phase 5 — Test: Image → Design Mode</div><div class="ph-sub">Tests CLIP · MobileNetV2 · K-Means · GrabCut from one photo</div></div>
+  </div>
+  <div class="ph-body">
+
+    <p style="color:var(--muted);font-size:.81rem;margin-bottom:12px;">Click <strong>"📸 Image → Design"</strong> in the sidebar. You need a fashion photo to upload.</p>
+
+    <div class="alert info"><span class="ico">🖼️</span><div><b>Best test images:</b> Google "Y2K fashion outfit" or "cottagecore dress" or "streetwear look" → save any clear photo as JPG. Any image size works.</div></div>
+
+    <div class="steps">
+      <div class="step" onclick="tick(this)">
+        <div class="snum">22</div>
+        <div class="st-text">Click the file uploader and select your downloaded fashion photo
+          <div class="st-note">Accepts JPG, JPEG, PNG, WEBP — any file size</div>
+        </div>
+      </div>
+      <div class="step" onclick="tick(this)">
+        <div class="snum">23</div>
+        <div class="st-text">Confirm the image preview appears in the left column after selecting it</div>
+      </div>
+      <div class="step" onclick="tick(this)">
+        <div class="snum">24</div>
+        <div class="st-text">Make sure <strong>"Remove background before analysis (GrabCut)"</strong> toggle is ON
+          <div class="st-note">GrabCut (GMM + graph min-cut) isolates clothing pixels from background — gives cleaner K-Means color results</div>
+        </div>
+      </div>
+      <div class="step" onclick="tick(this)">
+        <div class="snum">25</div>
+        <div class="st-text">Click <strong>"🔬 Run Full ML Analysis Pipeline"</strong></div>
+      </div>
+      <div class="step" onclick="tick(this)">
+        <div class="snum">26</div>
+        <div class="st-text">Watch the 5-step bar: Step 1: GrabCut → Step 2: K-Means color clustering → Step 3: CLIP zero-shot → Step 4: MobileNetV2 → Step 5: Gemini Vision + FAISS</div>
+      </div>
+      <div class="step" onclick="tick(this)">
+        <div class="snum">27</div>
+        <div class="st-text">Check the <strong>CLIP Confidence Bars</strong> — 3 style names with gradient fill and a percentage each
+          <div class="st-note">Y2K photo → "Y2K" should score highest. Cottagecore → "cottagecore" on top. This is zero-shot deep learning — no labeled training data needed.</div>
+        </div>
+      </div>
+      <div class="step" onclick="tick(this)">
+        <div class="snum">28</div>
+        <div class="st-text">Check the <strong>K-Means color swatches</strong> — 4 circles with hex codes and % dominance
+          <div class="st-note">Visually compare: the first swatch's color should match the most dominant color you can see in the photo. That's K-Means clustering 40,000 pixel RGB vectors.</div>
+        </div>
+      </div>
+      <div class="step" onclick="tick(this)">
+        <div class="snum">29</div>
+        <div class="st-text">Check the <strong>Color Harmony label</strong> below the swatches (e.g., "analogous", "complementary", "monochromatic")
+          <div class="st-note">Computed by converting dominant colors to HSV and measuring hue spread in degrees</div>
+        </div>
+      </div>
+      <div class="step" onclick="tick(this)">
+        <div class="snum">30</div>
+        <div class="st-text">Check the <strong>4 CNN Attribute boxes</strong>: Garment Type · Pattern · Season · Formality
+          <div class="st-note">Powered by MobileNetV2 1280-dim feature vector — "Garment" should match what's actually in your photo</div>
+        </div>
+      </div>
+      <div class="step" onclick="tick(this)">
+        <div class="snum">31</div>
+        <div class="st-text">Scroll down and read the <strong>Gemini Vision Analysis</strong> — should describe garment, aesthetic, colors, fabric, and occasion in detail</div>
+      </div>
+      <div class="step" onclick="tick(this)">
+        <div class="snum">32</div>
+        <div class="st-text">Test the <strong>Remix feature</strong> — type <em>"Make it more formal for an office"</em> in the remix box and click run again</div>
+      </div>
+    </div>
+
+    <div class="expect">
+      <div class="exp-title">Correct Output Looks Like This</div>
+      <div class="exp-item">CLIP bars — top style actually matches the outfit's aesthetic in your photo</div>
+      <div class="exp-item">K-Means swatches — first swatch color visually matches the dominant color in the photo</div>
+      <div class="exp-item">CNN garment type makes sense (dress photo → "dress", not "pants")</div>
+      <div class="exp-item">Gemini vision text is detailed and describes what is actually visible in your photo</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ PHASE 6 ═════════ -->
+<div class="phase" id="p6">
+  <div class="ph-head" style="background:linear-gradient(135deg,rgba(245,158,11,.1),transparent)">
+    <div class="ph-icon" style="background:rgba(245,158,11,.2)">🗂️</div>
+    <div><div class="ph-title">Phase 6 — Test Remaining Modes + PDF</div><div class="ph-sub">Occasion Planner · Trend Explorer · ML Analytics · PDF Export</div></div>
+  </div>
+  <div class="ph-body">
+
+    <div class="sh" style="color:var(--yellow);background:rgba(245,158,11,.06);">🎯 Occasion Planner</div>
+    <div class="steps">
+      <div class="step" onclick="tick(this)">
+        <div class="snum">33</div>
+        <div class="st-text">Click <strong>"🎯 Occasion Planner"</strong> in the sidebar</div>
+      </div>
+      <div class="step" onclick="tick(this)">
+        <div class="snum">34</div>
+        <div class="st-text">Select <strong>"Beach Wedding"</strong> from the Occasion dropdown</div>
+      </div>
+      <div class="step" onclick="tick(this)">
+        <div class="snum">35</div>
+        <div class="st-text">Type preferences: <em>"I love pastels and flowy fabrics, nothing too formal"</em> — set budget: <em>₹5000</em></div>
+      </div>
+      <div class="step" onclick="tick(this)">
+        <div class="snum">36</div>
+        <div class="st-text">Click <strong>"🎯 Plan Complete Outfit"</strong> — verify result has <strong>COMPLETE LOOK, ACCESSORIES, FOOTWEAR, BUDGET BREAKDOWN</strong> sections</div>
+      </div>
+    </div>
+
+    <hr>
+
+    <div class="sh" style="color:var(--cyan);background:rgba(6,182,212,.06);">🌊 Trend Explorer</div>
+    <div class="steps">
+      <div class="step" onclick="tick(this)">
+        <div class="snum">37</div>
+        <div class="st-text">Click <strong>"🌊 Trend Explorer"</strong> — confirm all 8 trend cards appear (Mob Wife, Ballet Core, Quiet Luxury, Dopamine Dressing, Old Money, Dark Academia, Coastal Grandmother, Gorpcore)</div>
+      </div>
+      <div class="step" onclick="tick(this)">
+        <div class="snum">38</div>
+        <div class="st-text">Click <strong>"Generate →"</strong> on the Ballet Core card — spinner runs, design appears in "View Design" expander below the card</div>
+      </div>
+      <div class="step" onclick="tick(this)">
+        <div class="snum">39</div>
+        <div class="st-text">Generate on one more trend card — confirm both results coexist on the page without disappearing</div>
+      </div>
+    </div>
+
+    <hr>
+
+    <div class="sh" style="color:var(--purple);background:rgba(139,92,246,.06);">📊 ML Analytics Dashboard</div>
+    <div class="steps">
+      <div class="step" onclick="tick(this)">
+        <div class="snum">40</div>
+        <div class="st-text">Click <strong>"📊 ML Analytics"</strong> — confirm algorithm reference table loads with 9 rows</div>
+      </div>
+      <div class="step" onclick="tick(this)">
+        <div class="snum">41</div>
+        <div class="st-text">Confirm 3 metric boxes: <em>Deep Learning Models: 3</em> · <em>Classical ML Algorithms: 3</em> · <em>CV Algorithms: 2</em></div>
+      </div>
+      <div class="step" onclick="tick(this)">
+        <div class="snum">42</div>
+        <div class="st-text">Read the Data Flow Diagram at the bottom — <strong>keep this page open during your demo</strong> for evaluators to see the algorithm pipeline</div>
+      </div>
+    </div>
+
+    <hr>
+
+    <div class="sh" style="color:var(--green);background:rgba(16,185,129,.06);">📁 Portfolio + PDF Export</div>
+    <div class="steps">
+      <div class="step" onclick="tick(this)">
+        <div class="snum">43</div>
+        <div class="st-text">Go back to Text Mode, generate 2 more designs, save both — sidebar should show "Portfolio (3 saved)"</div>
+      </div>
+      <div class="step" onclick="tick(this)">
+        <div class="snum">44</div>
+        <div class="st-text">Click <strong>"📥 Export Lookbook PDF"</strong> in the sidebar — a "⬇️ Download" button should appear</div>
+      </div>
+      <div class="step" onclick="tick(this)">
+        <div class="snum">45</div>
+        <div class="st-text">Download and open the PDF — verify it has one page per design with: name · description · colors · style tags · ML analysis · timestamp</div>
+      </div>
+      <div class="step" onclick="tick(this)">
+        <div class="snum">46</div>
+        <div class="st-text">Click <strong>"🗑️ Clear All"</strong> — sidebar counter should reset to "Portfolio (0 saved)"</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ PHASE 7 ═════════ -->
+<div class="phase" id="p7">
+  <div class="ph-head" style="background:linear-gradient(135deg,rgba(239,68,68,.1),transparent)">
+    <div class="ph-icon" style="background:rgba(239,68,68,.2)">🔧</div>
+    <div><div class="ph-title">Phase 7 — Fix Common Errors</div><div class="ph-sub">Find your exact error below and run the fix</div></div>
+  </div>
+  <div class="ph-body">
+    <table class="etbl">
+      <thead><tr><th>Error you see</th><th>Cause</th><th>Fix</th></tr></thead>
+      <tbody>
+        <tr><td><span class="emsg">ModuleNotFoundError: open_clip</span></td><td style="color:var(--muted);font-size:.79rem">Package missing</td><td class="efix"><code>pip install open-clip-torch==2.24.0</code></td></tr>
+        <tr><td><span class="emsg">ModuleNotFoundError: faiss</span></td><td style="color:var(--muted);font-size:.79rem">FAISS missing</td><td class="efix"><code>pip install faiss-cpu==1.8.0</code></td></tr>
+        <tr><td><span class="emsg">PermissionDenied 403 / InvalidApiKey</span></td><td style="color:var(--muted);font-size:.79rem">Wrong key in .env</td><td class="efix">Open .env — key starts with <code>AIzaSy</code>, no quotes, no spaces</td></tr>
+        <tr><td><span class="emsg">ResourceExhausted 429 quota exceeded</span></td><td style="color:var(--muted);font-size:.79rem">15 req/min free limit hit</td><td class="efix">Wait 60 seconds then try again</td></tr>
+        <tr><td><span class="emsg">App stuck / spinning 2+ mins on first launch</span></td><td style="color:var(--muted);font-size:.79rem">Downloading CLIP model (350 MB)</td><td class="efix">Completely normal — wait it out. Only happens once.</td></tr>
+        <tr><td><span class="emsg">LookupError: punkt_tab not found</span></td><td style="color:var(--muted);font-size:.79rem">NLTK data missing</td><td class="efix"><code>python -c "import nltk; nltk.download('punkt_tab'); nltk.download('stopwords')"</code></td></tr>
+        <tr><td><span class="emsg">ModuleNotFoundError: sentence_transformers</span></td><td style="color:var(--muted);font-size:.79rem">BERT package missing</td><td class="efix"><code>pip install sentence-transformers==3.0.1</code></td></tr>
+        <tr><td><span class="emsg">OSError: No space left on device</span></td><td style="color:var(--muted);font-size:.79rem">Disk full (~3 GB needed)</td><td class="efix">Free disk space, or use Google Colab (free 15 GB)</td></tr>
+        <tr><td><span class="emsg">Products section blank/empty</span></td><td style="color:var(--muted);font-size:.79rem">product_finder import issue</td><td class="efix">Mock products should auto-show. Fully restart: <code>streamlit run app.py</code></td></tr>
+        <tr><td><span class="emsg">ImportError: cannot import 'STYLE_CATEGORIES'</span></td><td style="color:var(--muted);font-size:.79rem">Wrong working directory</td><td class="efix">Make sure terminal is inside <code>fashion_ai/</code> folder, not a parent folder</td></tr>
+        <tr><td><span class="emsg">cv2.error in Image Mode</span></td><td style="color:var(--muted);font-size:.79rem">GrabCut failed on tiny image</td><td class="efix">Already handled — app falls back to original image. Ignore and keep testing.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="alert tip"><span class="ico">💡</span><div><b>Nuclear reset — fixes 90% of weird errors:</b> Delete the <code>venv</code> folder completely and reinstall from scratch.</div></div>
+
+    <div class="codeblock">
+      <div class="code-top"><span class="code-lang">Complete venv reset — Mac/Linux</span><button class="copy-btn" onclick="cp(this)">Copy</button></div>
+      <div class="code-body"><code><span class="r">rm -rf venv</span>
+<span class="g">python3 -m venv venv && source venv/bin/activate</span>
+<span class="y">pip install -r requirements.txt</span>
+<span class="y">streamlit run app.py</span></code></div>
+    </div>
+    <div class="codeblock">
+      <div class="code-top"><span class="code-lang">Complete venv reset — Windows</span><button class="copy-btn" onclick="cp(this)">Copy</button></div>
+      <div class="code-body"><code><span class="r">rmdir /s /q venv</span>
+<span class="g">python -m venv venv</span>
+<span class="g">venv\Scripts\activate</span>
+<span class="y">pip install -r requirements.txt</span>
+<span class="y">streamlit run app.py</span></code></div>
+    </div>
+  </div>
+</div>
+
+<!-- SUMMARY -->
+<div class="summary">
+  <div style="font-size:1rem;font-weight:700;">Testing Progress</div>
+  <div class="sum-score" id="scscore">0 / 46</div>
+  <div class="sum-msg" id="scmsg">Click steps above to track your progress</div>
+  <button class="reset-btn" onclick="resetAll()">Reset All</button>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+const TOTAL = 46;
+let done = new Set();
+
+function tick(el) {
+  el.classList.toggle('done');
+  const n = el.querySelector('.snum').textContent;
+  el.classList.contains('done') ? done.add(n) : done.delete(n);
+  refresh();
+}
+function refresh() {
+  const n = done.size, pct = Math.round(n/TOTAL*100);
+  document.getElementById('pbar').style.width = pct+'%';
+  document.getElementById('ptxt').textContent = n+' of '+TOTAL+' steps done';
+  document.getElementById('ppct').textContent = pct+'%';
+  document.getElementById('scscore').textContent = n+' / '+TOTAL;
+  const msgs = [[46,'🎉 All done! Your project is fully tested and ready to demo.'],[35,'🔥 Almost there!'],[23,'✅ Over halfway — great progress!'],[10,'👍 Good start — keep going!'],[0,'Click steps above to track your progress']];
+  for(const [t,m] of msgs) if(n>=t){document.getElementById('scmsg').textContent=m;break;}
+}
+function go(id){ document.getElementById(id).scrollIntoView({behavior:'smooth',block:'start'}); }
+function cp(btn) {
+  const code = btn.closest('.codeblock').querySelector('code');
+  navigator.clipboard.writeText(code.innerText).then(()=>{
+    const orig=btn.textContent; btn.textContent='Copied!'; btn.style.background='var(--green)'; btn.style.color='white';
+    setTimeout(()=>{btn.textContent=orig;btn.style.background='';btn.style.color='';},2000);
+  });
+}
+function copyP(card){
+  navigator.clipboard.writeText(card.querySelector('.ptxt').innerText).then(()=>{
+    card.classList.add('copied');
+    setTimeout(()=>card.classList.remove('copied'),2200);
+  });
+}
+function resetAll(){
+  document.querySelectorAll('.step.done').forEach(s=>s.classList.remove('done'));
+  done.clear(); refresh();
+}
+</script>
+</body>
+</html>
