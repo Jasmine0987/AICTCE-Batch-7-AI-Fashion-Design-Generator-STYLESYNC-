@@ -308,13 +308,7 @@ colorthief==0.2.1               # Color extraction utilities
 7. MacQueen (1967). *Some methods for classification and analysis of multivariate observations.* 5th Berkeley Symposium on Mathematical Statistics.
 8. Google DeepMind (2024). *Gemini: A Family of Highly Capable Multimodal Models.* Technical Report.
 
----
 
-## License
-
-MIT License — see [LICENSE](LICENSE) for details.
-
----
 
 <div align="center">
   Built with Streamlit · Gemini 2.5 Flash · CLIP · PyTorch · HuggingFace
